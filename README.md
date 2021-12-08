@@ -15,4 +15,4 @@ REQUIREMENTS:
 - pNotify
 - Shells(https://k4mb1.tebex.io/package/4672293 you can change the sells by your self if you want a other shell)
 
-Vid: SOON
+Vid: https://youtu.be/sGHJlC6aVX8
