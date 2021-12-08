@@ -21,8 +21,6 @@ function KrijgGangLoods()
 	end
 end
 
-KrijgGangLoods()
-
 if ESX.RegisterCommand ~= nil then
 	ESX.RegisterCommand('gangloods-create', "admin", function(xPlayer, args, showError)
 		xPlayer.triggerEvent('pk-gangloods:creategangloods', xPlayer)
@@ -143,7 +141,7 @@ AddEventHandler('pk-gangloods:getItem', function(item, count, gang)
 	local amount = tonumber(count)
 	Storage(source, gang, "get", "items", amount, item)
 end)
-
+KrijgGangLoods()
 RegisterServerEvent('pk-gangloods:putItem')
 AddEventHandler('pk-gangloods:putItem', function(item, count, gang)
 	local _source      = source
