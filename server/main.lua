@@ -141,7 +141,7 @@ AddEventHandler('pk-gangloods:getItem', function(item, count, gang)
 	local amount = tonumber(count)
 	Storage(source, gang, "get", "items", amount, item)
 end)
-KrijgGangLoods()
+
 RegisterServerEvent('pk-gangloods:putItem')
 AddEventHandler('pk-gangloods:putItem', function(item, count, gang)
 	local _source      = source
@@ -180,3 +180,5 @@ end)
 ESX.RegisterServerCallback('pk-gangloods:krijgGangLoods', function(src, cb)
 	cb(GangLoods)
 end)
+
+KrijgGangLoods()
