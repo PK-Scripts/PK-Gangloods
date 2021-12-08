@@ -56,7 +56,7 @@ AddEventHandler('pk-gangloods:maaktgangloods', function(ingang, garage_spawnpoin
 			["@ingang"] = json.encode(ingang),
 		})
 		KrijgGangLoods()
-		Wait(10)
+		Wait(100)
 		refreshlabsclient(1)
 	end
 end)
@@ -98,18 +98,21 @@ Storage = function(src, gang, method, itemtype, amount, itemname)
                                 if stashdata[itemname] then
                                     stashdata[itemname].label = xItem.label
                                     stashdata[itemname].amount = stashdata[itemname].amount + amount
+									xPlayer.removeInventoryItem(itemname, amount)
                                 else
                                     stashdata[itemname] = {
                                         label = xItem.label,
                                         amount = amount,
                                         item = itemname
                                     }
+									xPlayer.removeInventoryItem(itemname, amount)
                                 end
                             end
                         elseif method == "get" then
                             if itemtype == "items" then
                                 if stashdata[itemname] and stashdata[itemname].amount >= amount then
                                     stashdata[itemname].amount = stashdata[itemname].amount - amount
+									xPlayer.addInventoryItem(itemname, amount)
                                     if stashdata[itemname].amount <= 0 then
                                         stashdata[itemname] = nil
                                     end
@@ -124,7 +127,7 @@ Storage = function(src, gang, method, itemtype, amount, itemname)
                             ["@gang"] = gang
                         })
 						KrijgGangLoods()
-						Wait(50)
+						Wait(100)
 						refreshlabsclient(1)
                    end
                end)

@@ -26,7 +26,7 @@ Config.MYSQLUsage = "mysqlasync"
 --br-menu = br-menu
 --ESX Menu = esx(W.I.P)
 
-Config.UseMenu = "linden"
+Config.UseMenu = "br-menu"
 
 Config.ZOffset = 1000
 
@@ -57,9 +57,7 @@ Config.Offsets = { -- PAS HIER NIET ZOMAAR WAT AAN ALLEEN ALS JE WEET WAT JE DOE
 -- Garage
 
 Config.Garage = {
-    {label = 'Bugatti Mansory', value = 'mansory', gang = 'blackmarket', job_grade = 0},
-	{label = 'CJNG Gang auto', value = 'polmesa', gang = 'cjngcartel', job_grade = 0},
-	{label = 'CJNG Gang auto big (NIET GEBRUIKEN ALLEEN ALS HET MAG)', value = 'riot', gang = 'cjngcartel', job_grade = -1},
+	{label = 'DAGGER', value = 'dagger', gang = 'cityangels', job_grade = -1},
 }
 
 -- Locale

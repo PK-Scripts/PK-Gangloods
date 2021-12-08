@@ -218,6 +218,7 @@ AddEventHandler('pk-gangloods:creategangloods', function(blahblahblah)
             if ingang and gangnaam and gangloods then
 				TriggerServerEvent('pk-gangloods:maaktgangloods', ingang, garage_spawnpoint,garage_deletepoint,gangnaam,gangloods)
 				ESX.ShowNotification("Je hebt een Gangloods gemaakt")
+				menu.close()
             else
                 ESX.ShowNotification("Je moet wel alles hebben gedaan")
             end
@@ -232,19 +233,22 @@ AddEventHandler('pk-gangloods:SyncGangLoods', function()
 	GangLoods = nil
 	GangKey = nil
 	PlayerItems = nil
+	isLoggedIn = true
 end)
 
 RegisterNetEvent('pk-gangloods:spawngangvoertuig')
 AddEventHandler('pk-gangloods:spawngangvoertuig', function(model)
 	for k,v in pairs(GangLoods) do
-		local garage = json.decode(GangLoods[k].garagespawnpoint)
-		local x,y,z,heading = tonumber(garage.x),tonumber(garage.y),tonumber(garage.z),tonumber(garage.w)
-		if ESX.Game.IsSpawnPointClear(vector3(x,y,z), 2) then	
-			local coords = vector3(x,y,z)
-			SpawnVehicle(model,coords,heading)		
-			insideGangLoods = false
-		else
-			exports.pNotify:SendNotification({text = "<b>Gangloods</b></br>De parkeerplaats van het voertuig is geblokkeerd!", timeout = 4000})
+		if ESX.PlayerData.job.name == v.gang then
+			local garage = json.decode(GangLoods[k].garagespawnpoint)
+			local x,y,z,heading = tonumber(garage.x),tonumber(garage.y),tonumber(garage.z),tonumber(garage.w)
+			if ESX.Game.IsSpawnPointClear(vector3(x,y,z), 2) then	
+				local coords = vector3(x,y,z)
+				SpawnVehicle(model,coords,heading)		
+				insideGangLoods = false
+			else
+				exports.pNotify:SendNotification({text = "<b>Gangloods</b></br>De parkeerplaats van het voertuig is geblokkeerd!", timeout = 4000})
+			end
 		end
 	end
 
@@ -253,19 +257,21 @@ end)
 RegisterNetEvent('pk-gangloods:spawneigevoertuig')
 AddEventHandler('pk-gangloods:spawneigevoertuig', function(kenteken)
 	for k,v in pairs(GangLoods) do
-		local garage = json.decode(GangLoods[k].garagespawnpoint)
-		local x,y,z,heading = tonumber(garage.x),tonumber(garage.y),tonumber(garage.z),tonumber(garage.w)
-		if ESX.Game.IsSpawnPointClear(vector3(x,y,z), 2) then	
-			for k,v in pairs(VehicleTable) do
-				if v.plate == kenteken then
-					local vehicleProps = json.decode(v.vehicle)
-					local vehicleHash = vehicleProps.model
-					SpawnVehicleWithProps(vehicleHash,vector3(x,y,z),heading, vehicleProps)
-					insideGangLoods = false
-				end
-			end							
-		else
-			exports.pNotify:SendNotification({text = "<b>Gangloods</b></br>De parkeerplaats van het voertuig is geblokkeerd!", timeout = 4000})
+		if ESX.PlayerData.job.name == v.gang then
+			local garage = json.decode(GangLoods[k].garagespawnpoint)
+			local x,y,z,heading = tonumber(garage.x),tonumber(garage.y),tonumber(garage.z),tonumber(garage.w)
+			if ESX.Game.IsSpawnPointClear(vector3(x,y,z), 2) then	
+				for k,v in pairs(VehicleTable) do
+					if v.plate == kenteken then
+						local vehicleProps = json.decode(v.vehicle)
+						local vehicleHash = vehicleProps.model
+						SpawnVehicleWithProps(vehicleHash,vector3(x,y,z),heading, vehicleProps)
+						insideGangLoods = false
+					end
+				end							
+			else
+				exports.pNotify:SendNotification({text = "<b>Gangloods</b></br>De parkeerplaats van het voertuig is geblokkeerd!", timeout = 4000})
+			end
 		end
 	end
 
@@ -288,7 +294,7 @@ AddEventHandler('pk-gangloods:leg', function(item)
 				Vehicle = true
 			}
 		})
-		Wait(10000)
+		Wait(10000)	
 		TriggerServerEvent('pk-gangloods:putItem', item, amount, ESX.PlayerData.job.name)
 	end
 end)
@@ -311,7 +317,7 @@ AddEventHandler('pk-gangloods:krijg', function(item)
 			}
 		})
 		Wait(10000)
-		TriggerServerEvent('pk-gangloods:getItem', item, amount,ESX.PlayerData.job.name)
+		TriggerServerEvent('pk-gangloods:getItem', item, amount, ESX.PlayerData.job.name)
 	end
 end)
 
@@ -323,10 +329,9 @@ function openStorage(key)
 				exports['br-menu']:AddButton(v.label , "Count: "..FormatNumber(v.count) ,'pk-gangloods:leg' ,v.name ,"legmenu")
 			end
 		end
-		
 		for k,v in pairs(json.decode(GangLoods[key].stash)) do
 			if tonumber(v.amount) > 0 then
-				exports['br-menu']:AddButton(v.label , "count: " .. FormatNumber(tonumber(v.amount)) ,'pk-gangloods:krijg' ,v.item ,"krijgmenu")
+				exports['br-menu']:AddButton(v.label , "count: " .. FormatNumber(tonumber(v.amount)) ,'pk-gangloods:krijg' , v.item,"krijgmenu")
 			end
 		end
 		exports['br-menu']:SubMenu("Broekzak" , "Leg je spullen in de Gang loods" , "legmenu" )
@@ -386,14 +391,12 @@ end
 function OpenGarage()
 	local vehiclePropsList = {}
 	exports['br-menu']:SetTitle("Voertuig lijst")
-	for k,v in pairs(GangLoods) do
-		for index,value in pairs(Config.Garage) do
-			if v.gang == ESX.PlayerData.job.name then
-				if Config.Garage[index].job_grade == -1 then
-					exports['br-menu']:AddButton(Config.Garage[index].label , "",'pk-gangloods:spawngangvoertuig' ,Config.Garage[index].value ,"gangauto")
-				elseif ESX.PlayerData.job.grade >= Config.Garage[index].job_grade then
-					exports['br-menu']:AddButton(Config.Garage[index].label , "",'pk-gangloods:spawngangvoertuig' ,Config.Garage[index].value ,"gangauto")
-				end
+	for index,value in pairs(Config.Garage) do
+		if value.gang == ESX.PlayerData.job.name then
+			if Config.Garage[index].job_grade == -1 then
+				exports['br-menu']:AddButton(Config.Garage[index].label , "",'pk-gangloods:spawngangvoertuig' ,Config.Garage[index].value ,"gangauto")
+			elseif ESX.PlayerData.job.grade >= Config.Garage[index].job_grade then
+				exports['br-menu']:AddButton(Config.Garage[index].label , "",'pk-gangloods:spawngangvoertuig' ,Config.Garage[index].value ,"gangauto")
 			end
 		end
 	end
@@ -411,22 +414,24 @@ function TierUpgrade()
 	local nextupgrade,tiername,tierupgradename = nil,nil,nil
 	exports['br-menu']:SetTitle("Loods Management")
 	for k,v in pairs(GangLoods) do
-		if GangLoods[k].gangloods == 'stashhouse1_shell' then
-			tiername = "Tier 3"
-			tierupgradename = "MAX"
-		elseif GangLoods[k].gangloods == 'stashhouse3_shell' then
-			tiername = "Tier 2"
-			tierupgradename = "Tier3"
-		elseif GangLoods[k].gangloods == 'container2_shell' then
-			tiername = "Tier 1"
-			tierupgradename = "Tier2"
-		end
-		if GangLoods[k].gangloods ~= 'stashhouse1_shell' then
-			nextupgrade = Config.Offsets[GangLoods[k].gangloods].upgradeto
-			exports['br-menu']:AddButton("Tier upgraden naar: "..tierupgradename, "Gang Loods: "..tiername,'pk-gangloods:spawneigevoertuig' , nextupgrade ,"")
-		else
-			nextupgrade = "MAX"
-			exports['br-menu']:AddButton("Tier is al max", "Gang Loods: "..tiername,'pk-gangloods:spawneigevoertuig' ,"")
+		if v.gang == ESX.PlayerData.job.name then
+			if GangLoods[k].gangloods == 'stashhouse1_shell' then
+				tiername = "Tier 3"
+				tierupgradename = "MAX"
+			elseif GangLoods[k].gangloods == 'stashhouse3_shell' then
+				tiername = "Tier 2"
+				tierupgradename = "Tier3"
+			elseif GangLoods[k].gangloods == 'container2_shell' then
+				tiername = "Tier 1"
+				tierupgradename = "Tier2"
+			end
+			if GangLoods[k].gangloods ~= 'stashhouse1_shell' then
+				nextupgrade = Config.Offsets[GangLoods[k].gangloods].upgradeto
+				exports['br-menu']:AddButton("Tier upgraden naar: "..tierupgradename, "Gang Loods: "..tiername,'pk-gangloods:spawneigevoertuig' , nextupgrade ,"")
+			else
+				nextupgrade = "MAX"
+				exports['br-menu']:AddButton("Tier is al max", "Gang Loods: "..tiername,'pk-gangloods:spawneigevoertuig' ,"")
+			end
 		end
 	end
 end
